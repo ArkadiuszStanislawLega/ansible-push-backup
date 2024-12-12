@@ -1,0 +1,3 @@
+---
+backup_filename: "backup.tar"
+# vars file for copy_backup_to_host

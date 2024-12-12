@@ -1,0 +1,32 @@
+---
+- name: Get container Id
+  command: "docker ps -qf name=db"
+  register: db_container_id
+
+- name: Create variable container id
+  set_fact:
+    docker_db_id: db_container_id.stdout
+
+- name: Drop old db
+  ansible.builtin.shell: |
+    docker exec -i {{ db_container_id.stdout }} psql -U {{ admin_name }} -d postgres -c "DROP DATABASE IF EXISTS  {{ database_name }};"
+
+- name: Create new db
+  ansible.builtin.shell: |
+    docker exec -i {{ db_container_id.stdout }} psql -U {{ admin_name }} -d postgres -c "CREATE DATABASE {{ database_name }};"
+
+- name: Copy backup to db
+  ansible.builtin.shell: |
+    docker exec -i {{  db_container_id.stdout }} psql -U {{ admin_name }} -d {{ database_name }} <  {{ path_to_database_backup }}
+
+- name: Remove backup 
+  ansible.builtin.file:
+    state: absent
+    path: "{{ path_to_database_backup }}"
+
+- name: Remove backup directory
+  ansible.builtin.file:
+    state: absent
+    path: "/home/{{ ansible_user }}/backup"
+
+# tasks file for push_postgress

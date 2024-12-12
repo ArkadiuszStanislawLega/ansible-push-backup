@@ -1,0 +1,56 @@
+---
+- name: Create directory for backup
+  ansible.builtin.file:
+    state: directory
+    path: home/{{ ansible_user }}/backup
+    owner: "{{ ansible_user }}"
+
+- name: Copy backup to host
+  ansible.builtin.copy:
+    src: ./files/{{ backup_filename }}
+    dest: /home/{{ ansible_user }}/backup/
+    mode: 'u=rwx,g=wr,o=r'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  throttle: 1
+  tags:
+    - copy_backup_to_host
+
+- name: Unarchive backup
+  ansible.builtin.unarchive:
+    src: /home/{{ ansible_user }}/backup/{{ backup_filename }}
+    dest: /home/{{ ansible_user }}/backup/
+    remote_src: yes
+  tags: 
+    - unarchive_django_project
+
+- name: Remove backup archive
+  ansible.builtin.file:
+    state: absent
+    path: /home/{{ ansible_user }}/backup/{{ backup_filename }}
+
+- name: Find name of archive with media
+  ansible.builtin.find:
+    paths: /home/{{ ansible_user }}/backup/
+    patterns: "*.tar"
+    file_type: file
+  register: media_archive
+  tags: 
+    - find_media_archive_name
+
+- name: Find name of sql backup name 
+  ansible.builtin.find:
+    paths: /home/{{ ansible_user }}/backup/
+    patterns: "*.sql"
+    file_type: file
+  register: database_backup
+
+- name: Set global variable for the media archive path
+  set_fact:
+    path_to_media_archive: "{{ media_archive.files[0].path }}"
+
+- name: Set global variable for the database bacup path
+  set_fact:
+    path_to_database_backup: "{{ database_backup.files[0].path }}"
+
+# tasks file for copy_backup_to_host

@@ -1,0 +1,17 @@
+---
+- name: Push data from backup
+  hosts: target_server
+  become: yes
+  vars: 
+    invoker_target_directory: "/backups/"
+    path_to_media_archive: ""
+    username: "username"
+  roles: 
+    - copy_backup_to_host
+    - role: push_media
+      tags: ["push_media"]
+
+    - role: push_postgress
+      tags: ["push_postgress"]
+    
+    

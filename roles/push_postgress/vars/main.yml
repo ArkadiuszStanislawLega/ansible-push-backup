@@ -1,0 +1,4 @@
+---
+admin_name: admin
+database_name: db
+# vars file for push_postgress
