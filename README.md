@@ -1,4 +1,4 @@
-Role Name
+Ansible push backup
 =========
 
 With this script you can send an archive of mediafiles and a database backup. They will be unarchived and placed in the right place, and the database will be restored to the point of backup.
